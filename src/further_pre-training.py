@@ -18,12 +18,14 @@ parser.add_argument('-m','--model_path', help='model path', required=True)
 parser.add_argument('-t','--train_size', help='url', required=True)
 parser.add_argument('-f','--folder_path', help='folder path', required=True)
 parser.add_argument('-e','--experiment_name', help='experiment name', required=True)
+parser.add_argument('-a','--training_args', help='training arguments', required=True)
 args = vars(parser.parse_args())
 
 train_size = args['train_size']
 model_checkpoint = args['model_path']
 folder_path = args['folder_path']
 experiment_name = args['experiment_name']
+training_args = args['training_args']
 # model_checkpoint = "xlm-roberta-base"
 
 block_size = 128
@@ -83,6 +85,7 @@ model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
 data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer,  mlm=True, mlm_probability=0.15)
 
 model_name = model_checkpoint.split("/")[-1]
+
 training_args = TrainingArguments(
     f"/content/gdrive/MyDrive/SIRIS Projects/04. GRANTS R&D/02-Implementation/2023Building reliable author- and institution-level curation tools for performing accurate analyses on scientific catalogues/2023AffilGood/NER for Affiliation Entity/further pre-training RoBERTa for affiliation language/models/affilraw-{model_name}-{experiment_name}",
     evaluation_strategy = "steps",
@@ -91,9 +94,9 @@ training_args = TrainingArguments(
     per_device_eval_batch_size=16,
     learning_rate=0.0005,#2e-5,
     #weight_decay=0.01,
-    #max_steps = 12500,
+    max_steps = 22500,
     eval_steps= 500,
-    num_train_epochs=1,
+    num_train_epochs=6,
     #gradient_accumulation_steps = 4,
     # warmup_ratio = 0.06,
     #load_best_model_at_end = True,
@@ -107,7 +110,7 @@ trainer = Trainer(
     data_collator = data_collator,
     train_dataset=tokenized_datasets["train"],
     eval_dataset=tokenized_datasets["test"],
-    #callbacks = [EarlyStoppingCallback(early_stopping_patience = 2)]
+    #callbacks = [EarlyStoppingCallback(early_stopping_patience = 5)]
 )
 
 trainer.train()
